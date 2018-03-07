@@ -4,7 +4,7 @@
   "version": "0.0.2",
   "description": "",
   "license": "MIT",
-  "repository": "user/repo",
+  "repository": "fengzilong/stickerbar",
   "main": "./index.js",
   "author": {
     "name": "fengzilong",
