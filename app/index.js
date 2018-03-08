@@ -3,7 +3,7 @@ const axios = require( 'axios' )
 const debounce = require( 'lodash.debounce' )
 const Base64 = require( 'js-base64' ).Base64
 const blobToBuffer = require( 'blob-to-buffer' )
-const fs = require( 'fs' )
+const isGif = require( 'is-gif' )
 const { nativeImage, clipboard, ipcRenderer } = require('electron')
 
 const PRESETS = [
@@ -74,11 +74,11 @@ const App = Regular.extend( {
     this.data.copyErrorMap = {}
     this.data.stickers = []
     this.data.kw = DEFAULT_KEYWORD
-    this.data.tid = -1
     this.data.page = 1
     // type = 0 表示自定义搜索 -> type
     this.data.type = 1
     // tid 特定类目id
+    this.data.tid = -1
     this.onKwChange = debounce( this.onKwChange.bind( this ), 100 )
     this.data.presets = PRESETS
 
@@ -115,7 +115,7 @@ const App = Regular.extend( {
     }
   },
 
-  // tid 特定分类
+  // 用户搜索
   searchStickers( { kw = '', page = 1 } = {} ) {
     kw = this.encode( kw )
 
@@ -129,6 +129,7 @@ const App = Regular.extend( {
       } )
   },
 
+  // 特定分类
   loadPresetStickers( { kw = '', page = 1, tid } = {} ) {
     kw = this.encode( kw )
 
@@ -158,12 +159,11 @@ const App = Regular.extend( {
   },
 
   postFilter( imglist ) {
-    // return imglist
-    // 排除gif
+    // 排除gif后缀
     return imglist.filter( img => !img.url.endsWith( 'gif' ) )
   },
 
-  // 关键词encode
+  // 关键词 encode
   encode( kw ) {
     kw = Base64.encode( kw )
     kw = kw.replace( /\+/g, '_' )
@@ -202,19 +202,20 @@ const App = Regular.extend( {
 
   onCopy( url, index ) {
     axios.get( url, {
-      responseType: 'blob'
+      responseType: 'blob',
     } ).then( response => {
       console.log( response )
-      if ( response.headers[ 'content-type' ].toLowerCase() === 'image/gif' ) {
+      const contentType = response.headers[ 'content-type' ] || ''
+      if ( contentType.toLowerCase() === 'image/gif' ) {
         // 不支持复制gif
-        this.data.copyErrorMap[ index ] = true
-        this.$update()
-        setTimeout( () => {
-          this.data.copyErrorMap[ index ] = false
-          this.$update()
-        }, 1000 )
+        this.showCopyError( index )
       } else {
         blobToBuffer( response.data, ( err, buffer ) => {
+          // 有些图片 reponse headers 没有 content-type 字段，但可能是 gif
+          if ( isGif( buffer ) ) {
+            return this.showCopyError( index )
+          }
+
           // 写入剪贴板
           const img = nativeImage.createFromBuffer( buffer )
           clipboard.writeImage( img )
@@ -230,6 +231,15 @@ const App = Regular.extend( {
         } )
       }
     } )
+  },
+
+  showCopyError( index ) {
+    this.data.copyErrorMap[ index ] = true
+    this.$update()
+    setTimeout( () => {
+      this.data.copyErrorMap[ index ] = false
+      this.$update()
+    }, 1000 )
   },
 
   onShowOptionsMenu( e ) {

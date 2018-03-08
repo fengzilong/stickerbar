@@ -1162,6 +1162,10 @@ file-entry-cache@^2.0.0:
     flat-cache "^1.2.1"
     object-assign "^4.0.1"
 
+file-type@^7.4.0:
+  version "7.6.0"
+  resolved "https://registry.npmjs.org/file-type/-/file-type-7.6.0.tgz#b3dbfc8029148e86f30761b21253562943d21f06"
+
 find-up@^1.0.0:
   version "1.1.2"
   resolved "http://registry.npm.taobao.org/find-up/download/find-up-1.1.2.tgz#6b2e9822b1a2ce0a60ab64d610eccad53cb24d0f"
@@ -1533,6 +1537,12 @@ is-get-set-prop@^1.0.0:
   dependencies:
     get-set-props "^0.1.0"
     lowercase-keys "^1.0.0"
+
+is-gif@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/is-gif/-/is-gif-2.0.0.tgz#be88c043a7d2d8e4c896e411ff1a1a28957910fe"
+  dependencies:
+    file-type "^7.4.0"
 
 is-installed-globally@^0.1.0:
   version "0.1.0"

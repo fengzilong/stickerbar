@@ -21,6 +21,7 @@
     "axios": "^0.18.0",
     "blob-to-buffer": "^1.2.7",
     "electron-debug": "^1.0.0",
+    "is-gif": "^2.0.0",
     "js-base64": "^2.4.3",
     "lodash.debounce": "^4.0.8",
     "menubar": "^5.2.3",
