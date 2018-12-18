@@ -159,8 +159,7 @@ const App = Regular.extend( {
   },
 
   postFilter( imglist ) {
-    // 排除gif后缀
-    return imglist.filter( img => !img.url.endsWith( 'gif' ) )
+    return imglist
   },
 
   // 关键词 encode
@@ -204,35 +203,30 @@ const App = Regular.extend( {
     axios.get( url, {
       responseType: 'blob',
     } ).then( response => {
-      console.log( response )
-      const contentType = response.headers[ 'content-type' ] || ''
-      if ( contentType.toLowerCase() === 'image/gif' ) {
-        // 不支持复制gif
-        this.showCopyError( index )
-      } else {
-        blobToBuffer( response.data, ( err, buffer ) => {
-          // 有些图片 reponse headers 没有 content-type 字段，但可能是 gif
-          if ( isGif( buffer ) ) {
-            return this.showCopyError( index )
-          }
-
-          // 写入剪贴板
+      blobToBuffer( response.data, ( err, buffer ) => {
+        // 写入剪贴板
+        if ( isGif( buffer ) ) {
+          // https://github.com/kevva/kap-clipboard/blob/master/index.js
+          // 只能拷贝第一帧
+          clipboard.writeBuffer( 'com.compuserve.gif', buffer )
+        } else {
           const img = nativeImage.createFromBuffer( buffer )
           clipboard.writeImage( img )
+        }
 
-          this.data.copiedMap[ index ] = true
+        this.data.copiedMap[ index ] = true
+        this.$update()
+
+        setTimeout( () => {
+          this.data.copiedMap[ index ] = false
           this.$update()
-
-          setTimeout( () => {
-            this.data.copiedMap[ index ] = false
-            this.$update()
-            ipcRenderer.send( 'hide-menubar-window' )
-          }, 300 )
-        } )
-      }
+          ipcRenderer.send( 'hide-menubar-window' )
+        }, 300 )
+      } )
     } )
   },
 
+  // unused
   showCopyError( index ) {
     this.data.copyErrorMap[ index ] = true
     this.$update()

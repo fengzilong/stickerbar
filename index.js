@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require( 'path' )
 const electron = require( 'electron' )
 const { ipcMain } = electron
 const buildMenu = require( './menu' )
@@ -14,6 +15,7 @@ var menubar = require( 'menubar' )
 var mb = menubar( {
   height: 570,
   preloadWindow: true,
+  dir: path.join( __dirname, 'app' )
   // alwaysOnTop: true,
 } )
 
